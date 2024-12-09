@@ -1,0 +1,17 @@
+syntax="proto3";
+
+option csharp_namespace = "Shared.Library.Protos";
+
+import "Common.proto";
+
+service CareerGrpc {
+    rpc GetAll (Empty) returns (Careers) {}
+}
+
+message Careers {
+    repeated Career careers = 1;
+}
+
+message Career {
+    string name = 1;
+}
