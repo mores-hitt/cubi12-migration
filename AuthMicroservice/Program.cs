@@ -1,44 +1,78 @@
+using Microsoft.EntityFrameworkCore;
+using Auth.Src.Data;
+
+using Auth.Src.Extensions;
+using Auth.Src.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
+var localAllowSpecificOrigins = "_localAllowSpecificOrigins";
+var deployedAllowSpecificOrigins = "_deployedAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: localAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .AllowCredentials()
+                                .WithOrigins("http://localhost:3000",
+                                            "http://localhost:8100",
+                                            "http://localhost");
+                      });
+    options.AddPolicy(name: deployedAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .AllowCredentials()
+                                .WithOrigins("https://cubi12.azurewebsites.net",
+                                            "https://cubi12.cl",
+                                            "https://www.cubi12.cl"
+                                            );
+                      });
+});
 
 // Add services to the container.
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddApplicationServices(builder.Configuration);
+
+builder.Services.AddOutputCache(options =>
+{
+    options.AddBasePolicy(builder => builder.Cache());
+});
 
 var app = builder.Build();
+app.UseOutputCache();
 
-// Configure the HTTP request pipeline.
+
+// Because it's the first middleware, it will catch all exceptions
+app.UseExceptionHandling();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(localAllowSpecificOrigins);
 }
+else
+{
+    app.UseCors(deployedAllowSpecificOrigins);
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// app.UseIsUserEnabled();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+// Database Bootstrap
+AppSeedService.SeedDatabase(app);
+
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
