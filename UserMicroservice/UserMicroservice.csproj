@@ -8,9 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\Shared.Library\Protos\**\*.proto" GrpcServices="Server">
+    <Protobuf Include="..\Shared.Library\Protos\User.proto" GrpcServices="Server">
       <Link>Protos\%(Filename)%(Extension)</Link>
     </Protobuf>
+    <Protobuf Include="..\Shared.Library\Protos\Subject.proto" GrpcServices="Server">
+      <Link>Protos\%(Filename)%(Extension)</Link>
+    </Protobuf>
+    <Protobuf Include="..\Shared.Library\Protos\Common.proto" GrpcServices="Server">
+      <Link>Protos\%(Filename)%(Extension)</Link>
+    </Protobuf>
+
   </ItemGroup>
 
   <ItemGroup>
