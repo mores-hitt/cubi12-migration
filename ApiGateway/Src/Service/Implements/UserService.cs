@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Shared.Library.Protos;
 using Microsoft.AspNetCore.Http;
 using Grpc.Net.Client;
-using ApiGateway.Interfaces;
+using ApiGateway.Src.Service.Interfaces;
 
 namespace ApiGateway.Src.Service{
     public class UserService : IUserService{

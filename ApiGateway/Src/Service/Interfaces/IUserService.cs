@@ -2,7 +2,7 @@ using Grpc.Core;
 using Google.Protobuf.Collections;
 using Shared.Library.Protos;
 
-namespace ApiGateway.Interfaces
+namespace ApiGateway.Src.Service.Interfaces
 {
     public interface IUserService
     {

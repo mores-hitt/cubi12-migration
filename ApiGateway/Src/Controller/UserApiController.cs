@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.Library.Protos;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Authorization;
-using ApiGateway.Interfaces;
+using ApiGateway.Src.Service.Interfaces;
 
 namespace ApiGateway.Src.UserApiController{
     [Route("api/[controller]")]
