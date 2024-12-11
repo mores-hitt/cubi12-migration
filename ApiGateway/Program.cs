@@ -24,6 +24,10 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddControllers();
 builder.Services.AddScoped<ICareerService, CareerService>();
 builder.Services.AddScoped<ICareerServiceClient, CareerServiceClient>();
+builder.Services.AddScoped<ILegacyService, LegacyService>();
+builder.Services.AddScoped<ILegacyServiceClient, LegacyServiceClient>();
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
