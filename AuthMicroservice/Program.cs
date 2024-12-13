@@ -1,12 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Auth.Src.Data;
-
 using Auth.Src.Extensions;
 using Auth.Src.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 var localAllowSpecificOrigins = "_localAllowSpecificOrigins";
 var deployedAllowSpecificOrigins = "_deployedAllowSpecificOrigins";
+
+// Add services to the container.
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddCors(options =>
 {
@@ -28,14 +31,11 @@ builder.Services.AddCors(options =>
                                 .AllowCredentials()
                                 .WithOrigins("https://cubi12.azurewebsites.net",
                                             "https://cubi12.cl",
-                                            "https://www.cubi12.cl"
-                                            );
+                                            "https://www.cubi12.cl");
                       });
 });
 
-// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddApplicationServices(builder.Configuration);
 
@@ -46,7 +46,6 @@ builder.Services.AddOutputCache(options =>
 
 var app = builder.Build();
 app.UseOutputCache();
-
 
 // Because it's the first middleware, it will catch all exceptions
 app.UseExceptionHandling();
@@ -64,15 +63,16 @@ else
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-// app.UseIsUserEnabled();
-
 app.UseHttpsRedirection();
-
 app.MapControllers();
 
 // Database Bootstrap
-AppSeedService.SeedDatabase(app);
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<DataContext>();
+    context.Database.Migrate();
+    AppSeedService.SeedDatabase(app);
+}
 
 app.Run();

@@ -1,7 +1,5 @@
 using Ocelot.DependencyInjection;
-using ApiGateway.Src.Service;
 using Ocelot.Middleware;
-using ApiGateway.Src.Service.Interfaces;
 using ApiGateway.Src.Services.Interfaces;
 using ApiGateway.Src.Services;
 using ApiGateway.Src.Clients;
@@ -11,17 +9,32 @@ using Grpc.Net.Client;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-//builder.Services.AddOcelot(builder.Configuration);
-//builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(type => type.FullName);
+});
 builder.Services.AddSingleton(services =>
 {
     return GrpcChannel.ForAddress("http://localhost:5275");
 });
+builder.Services.AddSingleton(services =>
+{
+    return GrpcChannel.ForAddress("http://localhost:5375");
+});
 
-builder.Services.AddTransient<IUserService, UserService>();
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IAuthServiceClient>(provider =>
+{
+    var httpClient = provider.GetRequiredService<HttpClient>();
+    var baseUrl = "http://localhost:5235";
+    return new AuthServiceClient(httpClient, baseUrl);
+});
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<ICareerService, CareerService>();
 builder.Services.AddScoped<ICareerServiceClient, CareerServiceClient>();
 builder.Services.AddScoped<ILegacyService, LegacyService>();
