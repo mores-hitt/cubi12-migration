@@ -1,6 +1,9 @@
 using user_microservice.Src.Extensions;
 using user_microservice.Src.Middlewares;
 using user_microservice.Src.Controllers;
+using MassTransit;
+using Shared.Library.Messages;
+using user_microservice.Src.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,31 @@ builder.Services.AddControllers();
 builder.Services.AddGrpc(options =>
 {
     options.Interceptors.Add<ExceptionHandlingInterceptor>();
+});
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<CreateUserConsumer>();
+    x.AddConsumer<UpdatePasswordConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("user-created-queue", ep => //CAMBIAR NOMBRE DE QUEUE
+        {
+            ep.ConfigureConsumer<CreateUserConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("update-password-queue", ep => //CAMBIAR NOMBRE DE QUEUE
+        {
+            ep.ConfigureConsumer<UpdatePasswordConsumer>(context);
+        });
+    });
 });
 
 builder.Services.AddGrpcReflection();
