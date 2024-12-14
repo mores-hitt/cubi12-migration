@@ -18,6 +18,7 @@ message UserDto {
     string rut = 4;
     string email = 5;
     CareerDto career = 6;
+    int32 id = 7;
 }
 
 message CareerDto {
