@@ -8,13 +8,24 @@ namespace ApiGateway.Src.Services
     {
         private readonly ISubjectServiceClient _subjectServiceClient;
 
-        public SubjectService(ISubjectServiceClient subjectServiceClient)
+        private readonly IAuthServiceClient _authServiceClient;
+
+        private readonly IHttpContextAccessor _ctxAccessor;
+
+        public SubjectService(ISubjectServiceClient subjectServiceClient, IAuthServiceClient authServiceClient, IHttpContextAccessor ctxAccessor)
         {
             _subjectServiceClient = subjectServiceClient;
+            _authServiceClient = authServiceClient;
+            _ctxAccessor = ctxAccessor;
         }
 
         public async Task<List<ApiGateway.Src.DTOs.Subjects.SubjectDto>> GetAll()
         {
+            var token = ExtractToken();
+            if (!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token invalido");
+            }
             var response = await _subjectServiceClient.GetAllAsync();
             if (response == null)
             {
@@ -33,6 +44,11 @@ namespace ApiGateway.Src.Services
 
         public async Task<List<ApiGateway.Src.DTOs.Subjects.SubjectRelationshipDto>> GetAllRelationships()
         {
+            var token = ExtractToken();
+            if (!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token invalido");
+            }
             var response = await _subjectServiceClient.GetAllRelationshipsAsync();
             if (response == null)
             {
@@ -48,6 +64,11 @@ namespace ApiGateway.Src.Services
 
         public async Task<Dictionary<string, List<string>>> GetAllPrerequisites()
         {
+            var token = ExtractToken();
+            if (!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token invalido");
+            }
             var response = await _subjectServiceClient.GetAllPrerequisitesAsync();
             if (response == null)
             {
@@ -59,6 +80,11 @@ namespace ApiGateway.Src.Services
 
         public async Task<Dictionary<string, List<string>>> GetAllPostRequisites()
         {
+            var token = ExtractToken();
+            if (!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token invalido");
+            }
             var response = await _subjectServiceClient.GetAllPostRequisitesAsync();
             if (response == null)
             {
@@ -67,6 +93,16 @@ namespace ApiGateway.Src.Services
             
             return response.PostRequisites.ToDictionary(p => p.Key, p => p.Value.PostSubjectCode.ToList());
     
+        }
+
+        public string ExtractToken()
+        {
+            var token = _ctxAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Split(" ").Last();
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Token no encontrado");
+            }
+            return token;
         }
     }
 }

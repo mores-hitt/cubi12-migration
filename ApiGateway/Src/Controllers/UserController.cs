@@ -38,7 +38,7 @@ namespace ApiGateway.Src.UserApiController
             return Ok();
         }
 
-        [HttpGet("update-profile")]
+        [HttpPatch("update-profile")]
         public async Task<ActionResult<UserDto>> EditProfile(EditProfileDto user)
         {
             var userUpdate = await _userService.EditProfile(user);
