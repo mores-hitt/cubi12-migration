@@ -31,6 +31,7 @@ message GetAllRelationshipsResponse {
 message SubjectRelationshipDto {
     string subject_code = 1;
     string pre_subject_code = 2;
+    int32 id = 3;
 }
 
 message GetAllPrerequisitesResponse {
