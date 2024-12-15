@@ -115,7 +115,9 @@ namespace Auth.Src.Services
         //TODO: Refactor this to MapperService
         private static void MapMissingFields(User createdUser, string token, LoginResponseDto response)
         {
+            response.Role = createdUser.Role.Name;
             response.Token = token;
+            response.Career = createdUser.Career.Name;
         }
 
         private async Task ValidateEmailAndRUT(string email, string rut)
