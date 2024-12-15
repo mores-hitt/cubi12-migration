@@ -8,7 +8,6 @@ namespace Career.Src.Mapping
     {
         public MappingProfile()
         {
-            // Define your mappings here
             CreateMap<Career.Src.Models.Career, Shared.Library.Protos.Career>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
 
