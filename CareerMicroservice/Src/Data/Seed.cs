@@ -56,13 +56,13 @@ namespace Career.Src.Data
                 var careersData = File.ReadAllText(path);
                 var careersList = JsonSerializer.Deserialize<List<Models.Career>>(careersData, options) ??
                     throw new Exception("CareersData.json is empty");
-
+                int count = 1;
                 // Normalize the name and code of the careers
                 careersList.ForEach(s =>
                 {
                     s.Id = ObjectId.GenerateNewId().ToString();
                     s.Name = s.Name.ToLower();
-                    s.IdCode = s.IdCode;
+                    s.IdCode = count++;
                 });
 
                 _logger.LogInformation("Inserting {Count} careers into the database.", careersList.Count);
