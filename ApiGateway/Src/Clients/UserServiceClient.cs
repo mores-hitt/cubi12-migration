@@ -11,14 +11,21 @@ namespace ApiGateway.Src.Clients
     {
         private readonly UserGrpc.UserGrpcClient _client;
 
-        public UserServiceClient()
+        private readonly IAuthServiceClient _authServiceClient;
+
+        public UserServiceClient(IAuthServiceClient authServiceClient)
         {
             _client = new UserGrpc.UserGrpcClient(GrpcChannel.ForAddress("http://localhost:5375"));
-            
+            _authServiceClient = authServiceClient;
         }
 
         public async Task<UserDto> GetUserAsync(string token)
         {
+            if(!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token no válido");
+            }
+
             var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -31,6 +38,11 @@ namespace ApiGateway.Src.Clients
 
         public async Task<GetUserProgressResponse> GetUserProgressAsync(string token)
         {
+            if(!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token no válido");
+            }
+
             var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -40,6 +52,11 @@ namespace ApiGateway.Src.Clients
 
         public async Task SetUserProgressAsync(UpdateUserProgressDto updateUserProgress, string token)
         {
+            if(!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token no válido");
+            }
+
              try
             {
                 var headers = new Metadata
@@ -56,6 +73,11 @@ namespace ApiGateway.Src.Clients
         
         public async Task<UserDto> EditProfile(EditProfileDto user, string token)
         {
+            if(!await _authServiceClient.ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token no válido");
+            }
+
              try
             {
                 var headers = new Metadata

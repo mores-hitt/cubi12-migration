@@ -11,5 +11,7 @@ namespace ApiGateway.Src.Clients.Interfaces
         public Task<LoginResponseDto> PostRegister(RegisterStudentDto registerRequest);
 
         public Task ChangePassword(UpdatePasswordDto changePasswordRequest, string token);
+
+        public Task<bool> ValidateToken(string token);
     }
 }
