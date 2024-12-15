@@ -62,6 +62,7 @@ namespace Career.Src.Data
                 {
                     s.Id = ObjectId.GenerateNewId().ToString();
                     s.Name = s.Name.ToLower();
+                    s.IdCode = s.IdCode;
                 });
 
                 _logger.LogInformation("Inserting {Count} careers into the database.", careersList.Count);
