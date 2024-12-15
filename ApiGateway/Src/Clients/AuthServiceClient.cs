@@ -89,17 +89,14 @@ namespace ApiGateway.Src.Clients
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Token is valid");
                 return true;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                Console.WriteLine("Token is invalid");
                 return false;
             }
             else
             {
-                Console.WriteLine("la logica esta mal");
                 return false;
             }
         }

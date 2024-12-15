@@ -9,7 +9,10 @@ using Auth.Src.Models;
 using Auth.Src.Repositories.Interfaces;
 using Auth.Src.Services.Interfaces;
 using DotNetEnv;
+using MassTransit.Testing;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Library.Messages;
+using MassTransit;
 
 namespace Auth.Src.Services
 {
@@ -21,13 +24,16 @@ namespace Auth.Src.Services
         private readonly IHttpContextAccessor _ctxAccesor;
         private readonly string _jwtSecret;
 
+        private readonly IPublishEndpoint _publishEndpoint;
+
         private readonly IBlackListRepository _tokenBlacklistRepository;
 
         public AuthService(IUnitOfWork unitOfWork,
         IConfiguration configuration,
         IMapperService mapperService,
         IHttpContextAccessor ctxAccesor,
-        IBlackListRepository tokenBlacklistRepository
+        IBlackListRepository tokenBlacklistRepository,
+        IPublishEndpoint publishEndpoint
         )
         {
             _unitOfWork = unitOfWork;
@@ -36,6 +42,7 @@ namespace Auth.Src.Services
             _ctxAccesor = ctxAccesor;
             _jwtSecret = Env.GetString("JWT_SECRET") ?? throw new InvalidJwtException("JWT_SECRET not found");
             _tokenBlacklistRepository = tokenBlacklistRepository;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
@@ -87,6 +94,21 @@ namespace Auth.Src.Services
             var response = _mapperService.Map<User, LoginResponseDto>(createdUser);
             // Not mapped fields
             MapMissingFields(createdUser, token, response);
+
+            UserCreated(
+                new UserCreatedMessage
+                {
+                    Name = createdUser.Name,
+                    FirstLastName = createdUser.FirstLastName,
+                    SecondLastName = createdUser.SecondLastName,
+                    RUT = createdUser.RUT,
+                    Email = createdUser.Email,
+                    CareerId = createdUser.CareerId,
+                    RoleId = createdUser.RoleId,
+                    Password = registerStudentDto.Password
+                }
+            );
+
             return response;
         }
 
@@ -173,6 +195,14 @@ namespace Auth.Src.Services
             var salt = BCrypt.Net.BCrypt.GenerateSalt(12);
             user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(updatePasswordDto.Password, salt);
 
+            UpdatePassword(
+                new UpdatePasswordMessage
+                {
+                    Id = user.Id,
+                    Password = user.HashedPassword
+                }
+            );
+
             await _unitOfWork.UsersRepository.Update(user);
         }
 
@@ -209,6 +239,16 @@ namespace Auth.Src.Services
         {
             var authorizationHeader = _ctxAccesor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
             return authorizationHeader?.Split(" ").Last();
-            }
+        }
+
+        public async Task UserCreated(UserCreatedMessage message)
+        {
+            await _publishEndpoint.Publish(message);
+        }
+
+        public async Task UpdatePassword(UpdatePasswordMessage message)
+        {
+            await _publishEndpoint.Publish(message);
+        }
     }
 }
