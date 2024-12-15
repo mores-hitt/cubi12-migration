@@ -12,7 +12,7 @@ namespace ApiGateway.Src.Clients
 
         public CareerServiceClient()
         {
-            _client = new CareerGrpc.CareerGrpcClient(GrpcChannel.ForAddress("http://localhost:5375"));
+            _client = new CareerGrpc.CareerGrpcClient(GrpcChannel.ForAddress("http://localhost:5275"));
         }
 
         public async Task<Careers> GetCareersAsync()

@@ -55,7 +55,7 @@ namespace ApiGateway.Src.Clients
 
         public async Task ChangePassword(UpdatePasswordDto updatePassword, string token)
         {
-            if(await ValidateToken(token))
+            if(!await ValidateToken(token))
             {
                 throw new UnauthorizedAccessException("Token no válido");
             }
