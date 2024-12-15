@@ -55,6 +55,10 @@ namespace ApiGateway.Src.Clients
 
         public async Task ChangePassword(UpdatePasswordDto updatePassword, string token)
         {
+            if(await ValidateToken(token))
+            {
+                throw new UnauthorizedAccessException("Token no válido");
+            }
             var content = new StringContent(JsonSerializer.Serialize(updatePassword), Encoding.UTF8, "application/json");
             var request = new HttpRequestMessage(HttpMethod.Put, $"{_baseUrl}/api/auth/update-password")
             {
@@ -69,6 +73,34 @@ namespace ApiGateway.Src.Clients
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Error: {response.StatusCode}, Content: {errorContent
                 }");
+            }
+        }
+
+        public async Task<bool> ValidateToken(string token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/api/auth/validate-token")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { token }), Encoding.UTF8, "application/json")
+            };
+
+            var response = await _httpClient.SendAsync(request);
+
+            Console.WriteLine(response.StatusCode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Token is valid");
+                return true;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Console.WriteLine("Token is invalid");
+                return false;
+            }
+            else
+            {
+                Console.WriteLine("la logica esta mal");
+                return false;
             }
         }
     }
