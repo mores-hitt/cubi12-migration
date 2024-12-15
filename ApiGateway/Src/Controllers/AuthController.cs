@@ -1,6 +1,7 @@
 using ApiGateway.Src.DTOs.Auth;
 using ApiGateway.Src.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace ApiGateway.Src.Controllers
 {
@@ -16,8 +17,15 @@ namespace ApiGateway.Src.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> PostLogin(LoginRequestDto loginRequest)
         {
-            var loginResponse = await _authService.PostLogin(loginRequest);
-            return Ok(loginResponse);
+            try
+            {
+                var loginResponse = await _authService.PostLogin(loginRequest);
+                return Ok(loginResponse);
+            }
+            catch (HttpRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("register")]
@@ -28,15 +36,17 @@ namespace ApiGateway.Src.Controllers
         }
 
         [HttpPut("update-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordDto updatePassword, [FromHeader(Name = "Authorization")] string authorization)
+        public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordDto updatePassword)
         {
-            var token = authorization?.Split(" ").Last();
-            if (string.IsNullOrEmpty(token))
+            try
             {
-                return Unauthorized("Token no proporcionado");
+                await _authService.ChangePassword(updatePassword);
+                return NoContent();
             }
-            await _authService.ChangePassword(updatePassword, token);
-            return NoContent();
+            catch (HttpRequestException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadGateway, new { message = ex.Message });
+            }
         }
 
     }

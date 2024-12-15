@@ -13,5 +13,7 @@ namespace Auth.Src.Services.Interfaces
 
         public Task UpdatePassword(UpdatePasswordDto updatePasswordDto);
 
+        public Task<bool> ValidateToken(string token);
+
     }
 }

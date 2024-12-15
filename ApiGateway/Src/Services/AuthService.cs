@@ -7,10 +7,12 @@ namespace ApiGateway.Src.Services
       public class AuthService : IAuthService
       {
             private readonly IAuthServiceClient _authServiceClient;
+            private readonly IHttpContextAccessor _ctxAccessor;
 
-            public AuthService(IAuthServiceClient authServiceClient)
+            public AuthService(IAuthServiceClient authServiceClient, IHttpContextAccessor ctxAccessor)
             {
                   _authServiceClient = authServiceClient;
+                   _ctxAccessor = ctxAccessor;
             }
 
             public async Task<LoginResponseDto> PostLogin(LoginRequestDto loginRequest)
@@ -23,9 +25,27 @@ namespace ApiGateway.Src.Services
                   return await _authServiceClient.PostRegister(registerRequest);
             }
 
-            public async Task ChangePassword(UpdatePasswordDto changePasswordRequest, string token)
+            public async Task ChangePassword(UpdatePasswordDto changePasswordRequest)
             {
-                  await _authServiceClient.ChangePassword(changePasswordRequest, token);
+                  var token = ExtractToken();
+                  try
+                  {
+                        await _authServiceClient.ChangePassword(changePasswordRequest, token);
+                  }
+                  catch (HttpRequestException ex)
+                  {
+                        throw new HttpRequestException($"Error changing password: {ex.Message}", ex);
+                  }
+            }
+
+            public string ExtractToken()
+            {
+                  var token = _ctxAccessor.HttpContext.Request.Headers["Authorization"].ToString()?.Split(" ").Last();
+                  if (string.IsNullOrEmpty(token))
+                  {
+                        throw new UnauthorizedAccessException("Token not provided");
+                  }
+                  return token;
             }
       }
 }

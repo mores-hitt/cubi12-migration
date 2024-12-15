@@ -10,6 +10,8 @@ namespace Auth.Src.Data {
 
         public DbSet<Career> Careers { get; set; } = null!;
 
+        public DbSet<BlacklistedToken> BlackListToken { get; set; } = null!;
+
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -17,6 +19,7 @@ namespace Auth.Src.Data {
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<Role>().HasKey(r => r.Id);
             modelBuilder.Entity<Career>().HasKey(c => c.Id);
+            modelBuilder.Entity<BlacklistedToken>().HasKey(b => b.Id);
 
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)

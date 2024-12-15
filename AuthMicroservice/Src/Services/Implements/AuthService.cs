@@ -21,10 +21,13 @@ namespace Auth.Src.Services
         private readonly IHttpContextAccessor _ctxAccesor;
         private readonly string _jwtSecret;
 
+        private readonly IBlackListRepository _tokenBlacklistRepository;
+
         public AuthService(IUnitOfWork unitOfWork,
         IConfiguration configuration,
         IMapperService mapperService,
-        IHttpContextAccessor ctxAccesor
+        IHttpContextAccessor ctxAccesor,
+        IBlackListRepository tokenBlacklistRepository
         )
         {
             _unitOfWork = unitOfWork;
@@ -32,6 +35,7 @@ namespace Auth.Src.Services
             _mapperService = mapperService;
             _ctxAccesor = ctxAccesor;
             _jwtSecret = Env.GetString("JWT_SECRET") ?? throw new InvalidJwtException("JWT_SECRET not found");
+            _tokenBlacklistRepository = tokenBlacklistRepository;
         }
 
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
@@ -43,7 +47,11 @@ namespace Auth.Src.Services
             if (!verifyPassword)
                 throw new InvalidCredentialException("Invalid Credentials");
 
+            var previousToken = user.CurrentToken;
+            await _tokenBlacklistRepository.AddToken(previousToken);
             var token = CreateToken(user.Email, user.Role.Name);
+            user.CurrentToken = token;
+            await _unitOfWork.UsersRepository.Update(user);
             var response = _mapperService.Map<User, LoginResponseDto>(user);
             MapMissingFields(user, token, response);
             return response;
@@ -68,10 +76,14 @@ namespace Auth.Src.Services
             mappedUser.CareerId = career.Id;
             var salt = BCrypt.Net.BCrypt.GenerateSalt(12);
             mappedUser.HashedPassword = BCrypt.Net.BCrypt.HashPassword(registerStudentDto.Password, salt);
+            
+            var token = CreateToken(mappedUser.Email, mappedUser.Id.ToString());
+
+            mappedUser.CurrentToken = token;
 
             var createdUser = await _unitOfWork.UsersRepository.Insert(mappedUser);
 
-            var token = CreateToken(createdUser.Email, createdUser.Role.Name);
+            
             var response = _mapperService.Map<User, LoginResponseDto>(createdUser);
             // Not mapped fields
             MapMissingFields(createdUser, token, response);
@@ -144,7 +156,12 @@ namespace Auth.Src.Services
         }
 
         public async Task UpdatePassword(UpdatePasswordDto updatePasswordDto)
-        {
+        {   
+            var token = GetTokenFromRequest();
+            if (!await ValidateToken(token))
+            {
+                throw new InvalidCredentialException("Token is invalid");
+            }
             var userEmail = GetUserEmailInToken();
             var user = await _unitOfWork.UsersRepository.GetByEmail(userEmail)
                 ?? throw new EntityNotFoundException($"User with email: {userEmail} do not exists");
@@ -158,5 +175,40 @@ namespace Auth.Src.Services
 
             await _unitOfWork.UsersRepository.Update(user);
         }
+
+        public async Task<bool> ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_jwtSecret);
+
+            try
+            {
+                if (await _tokenBlacklistRepository.IsTokenBlacklisted(token))
+                {
+                    return false;
+                }   
+
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private string GetTokenFromRequest()
+        {
+            var authorizationHeader = _ctxAccesor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            return authorizationHeader?.Split(" ").Last();
+            }
     }
 }

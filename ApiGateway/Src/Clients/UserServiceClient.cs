@@ -14,23 +14,39 @@ namespace ApiGateway.Src.Clients
         public UserServiceClient()
         {
             _client = new UserGrpc.UserGrpcClient(GrpcChannel.ForAddress("http://localhost:5375"));
+            
         }
 
-        public async Task<UserDto> GetUserAsync()
+        public async Task<UserDto> GetUserAsync(string token)
         {
-            return await _client.GetProfileAsync(new Empty());
+            var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {token}" }
+                };
+
+
+                
+            return await _client.GetProfileAsync(new Empty(), headers);
         }
 
-        public async Task<GetUserProgressResponse> GetUserProgressAsync()
+        public async Task<GetUserProgressResponse> GetUserProgressAsync(string token)
         {
-            return await _client.GetUserProgressAsync(new Empty());
+            var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {token}" }
+                };
+            return await _client.GetUserProgressAsync(new Empty(), headers);
         }
 
-        public async Task SetUserProgressAsync(UpdateUserProgressDto updateUserProgress)
+        public async Task SetUserProgressAsync(UpdateUserProgressDto updateUserProgress, string token)
         {
              try
             {
-                await _client.SetUserProgressAsync(updateUserProgress);
+                var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {token}" }
+                };
+                await _client.SetUserProgressAsync(updateUserProgress, headers);
             }
             catch (RpcException ex)
             {
@@ -38,11 +54,16 @@ namespace ApiGateway.Src.Clients
             }
         }
         
-        public async Task<UserDto> EditProfile(EditProfileDto user)
+        public async Task<UserDto> EditProfile(EditProfileDto user, string token)
         {
              try
             {
-                return await _client.EditProfileAsync(user);
+                var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {token}" }
+                };
+
+                return await _client.EditProfileAsync(user, headers);
             }
             catch (RpcException ex)
             {

@@ -62,13 +62,13 @@ namespace ApiGateway.Src.Clients
             };
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _httpClient.SendAsync(request);
+             var response = await _httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error en la solicitud de inicio de sesión: {errorContent}");
-                throw new HttpRequestException($"Error en la solicitud de cambio de contraseña: {errorContent}");
+                throw new HttpRequestException($"Error: {response.StatusCode}, Content: {errorContent
+                }");
             }
         }
     }

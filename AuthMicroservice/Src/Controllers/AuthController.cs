@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Auth.Src.Services.Interfaces;
 using Auth.Src.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Auth.Src.Dtos;
 
 namespace Auth.Src.Controllers
 
@@ -37,6 +38,20 @@ namespace Auth.Src.Controllers
         {
             await _authService.UpdatePassword(updatePasswordDto);
             return NoContent();
+        }
+
+        [HttpPost("validate-token")]
+        public async Task<ActionResult> ValidateToken([FromBody] ValidateTokenDto token)
+        {
+            var isValid = await _authService.ValidateToken(token.Token);
+            if ( isValid)
+            {
+                return Ok(new { message = "Token is valid" });
+            }
+            else
+            {
+                return Unauthorized(new { message = "Token is invalid" });
+            }
         }
     }
 }

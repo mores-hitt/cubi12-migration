@@ -17,7 +17,7 @@ namespace ApiGateway.Src.UserApiController
             _userService = userService;
         }
 
-        [HttpGet("Profile")]
+        [HttpGet("profile")]
         public async Task<ActionResult<UserDto>> GetProfile()
         {
             var response = await _userService.GetProfile();
@@ -41,8 +41,8 @@ namespace ApiGateway.Src.UserApiController
         [HttpGet("update-profile")]
         public async Task<ActionResult<UserDto>> EditProfile(EditProfileDto user)
         {
-            await _userService.EditProfile(user);
-            return Ok();
+            var userUpdate = await _userService.EditProfile(user);
+            return Ok(userUpdate);
         }
     }
 }

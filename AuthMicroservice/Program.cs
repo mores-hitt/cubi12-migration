@@ -2,6 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Auth.Src.Data;
 using Auth.Src.Extensions;
 using Auth.Src.Middlewares;
+using Auth.Src.Services;
+using Auth.Src.Services.Interfaces;
+using Auth.Src.Repositories;
+using Auth.Src.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var localAllowSpecificOrigins = "_localAllowSpecificOrigins";
@@ -34,6 +38,14 @@ builder.Services.AddCors(options =>
                                             "https://www.cubi12.cl");
                       });
 });
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBlackListRepository, BlacklistRepository>();
+builder.Services.AddScoped<ICareersRepository, CareersRepository>();
+builder.Services.AddScoped<IRolesRepository, RolesRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

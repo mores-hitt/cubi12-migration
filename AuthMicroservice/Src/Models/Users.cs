@@ -30,5 +30,7 @@ namespace Auth.Src.Models
         public int RoleId { get; set; }
 
         public Role Role { get; set; } = null!;
+
+        public string CurrentToken { get; set; } = null!;
     }
 }
