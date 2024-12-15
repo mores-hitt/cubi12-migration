@@ -6,10 +6,21 @@ using Auth.Src.Services;
 using Auth.Src.Services.Interfaces;
 using Auth.Src.Repositories;
 using Auth.Src.Repositories.Interfaces;
+using RabbitMQ;
+using MassTransit;
+using Shared.Library.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
 var localAllowSpecificOrigins = "_localAllowSpecificOrigins";
 var deployedAllowSpecificOrigins = "_deployedAllowSpecificOrigins";
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBlackListRepository, BlacklistRepository>();
+builder.Services.AddScoped<ICareersRepository, CareersRepository>();
+builder.Services.AddScoped<IRolesRepository, RolesRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 // Add services to the container.
 builder.Services.AddDbContext<DataContext>(options =>
@@ -39,13 +50,29 @@ builder.Services.AddCors(options =>
                       });
 });
 
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IBlackListRepository, BlacklistRepository>();
-builder.Services.AddScoped<ICareersRepository, CareersRepository>();
-builder.Services.AddScoped<IRolesRepository, RolesRepository>();
-builder.Services.AddScoped<IUsersRepository, UsersRepository>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddMassTransit(x =>
+{
 
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.Send<UserCreatedMessage>(x =>
+            {
+                x.UseRoutingKeyFormatter(context => "user-created-queue");
+            });
+        cfg.Send<UpdatePasswordMessage>(x =>
+            {
+                x.UseRoutingKeyFormatter(context => "update-password-queue");
+            });
+
+    });
+
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
