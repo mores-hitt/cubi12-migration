@@ -40,6 +40,8 @@ builder.Services.AddScoped<ICareerService, CareerService>();
 builder.Services.AddScoped<ICareerServiceClient, CareerServiceClient>();
 builder.Services.AddScoped<ILegacyService, LegacyService>();
 builder.Services.AddScoped<ILegacyServiceClient, LegacyServiceClient>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ISubjectServiceClient, SubjectServiceClient>();
 
 builder.Services.AddHttpClient();
 
