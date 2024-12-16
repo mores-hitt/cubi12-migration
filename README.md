@@ -15,13 +15,15 @@ jhon.lopez@alumnos.ucn.cl
 21.011.823-3
 25.415.945-K
 
-## Prerequisitos para correr el projecto sin docker
+## Prerequisitos para correr el projecto
 
 Antes de correr el projecto, asegurate de tener las siguientes cosas instaladas:
 
 - .NET 8
 - Docker Desktop
 - repositorio en ejecucion de cubi12-api
+
+Tambien, asegurate de tener una conexión de internet estable. Este proyecto utiliza filess para hostear la base de datos mongodb, por lo que es requerido una conexión estable
 
 ## Instalación
 
