@@ -35,7 +35,7 @@ git clone https://github.com/mores-hitt/cubi12-migration.git
 
 ```dotenv
 
-SECRET=//poner secreto jwt aqui
+JWT_SECRET=//poner secreto jwt aqui
 
 ```
 
