@@ -2,6 +2,7 @@ using ApiGateway.Src.Services.Interfaces;
 using ApiGateway.Src.Clients.Interfaces;
 using Shared.Library.Protos;
 using Microsoft.AspNetCore.Http.HttpResults;
+using ApiGateway.Src.DTOs.User;
 
 namespace ApiGateway.Src.Services{
     public class UserService : IUserService{
@@ -45,18 +46,29 @@ namespace ApiGateway.Src.Services{
 
         }
 
-        public async Task SetUserProgress(UpdateUserProgressDto updateUserProgress)
+        public async Task SetUserProgress(ApiGateway.Src.DTOs.User.UpdateUserProgressDto updateUserProgress)
         {
             var token = ExtractToken();
-            await _userServiceClient.SetUserProgressAsync(updateUserProgress, token);
+            var mappedUserProgress = new Shared.Library.Protos.UpdateUserProgressDto
+            {
+                AddSubjects = { updateUserProgress.add_subjects },
+                DeleteSubjects = { updateUserProgress.delete_subjects }
+            };
+            await _userServiceClient.SetUserProgressAsync(mappedUserProgress, token);
             return;
             
         }
 
-        public async Task<UserDto> EditProfile(EditProfileDto user)
+        public async Task<UserDto> EditProfile(UpdateUserProfileDto user)
         {
             var token = ExtractToken();
-            var updateUser = await _userServiceClient.EditProfile(user,token);
+            var mappedEdit = new Shared.Library.Protos.EditProfileDto
+            {
+                Name = user.name,
+                FirstLastName = user.first_last_name,
+                SecondLastName = user.second_last_name,
+            };
+            var updateUser = await _userServiceClient.EditProfile(mappedEdit,token);
             return new UserDto
             {
                 Name = updateUser.Name,

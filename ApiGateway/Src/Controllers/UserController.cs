@@ -3,6 +3,7 @@ using Shared.Library.Protos;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Authorization;
 using ApiGateway.Src.Services.Interfaces;
+using ApiGateway.Src.DTOs.User;
 
 namespace ApiGateway.Src.UserApiController
 {
@@ -32,14 +33,14 @@ namespace ApiGateway.Src.UserApiController
         }
 
         [HttpPatch("my-progress")]
-        public async Task<IActionResult> SetUserProgress(UpdateUserProgressDto updateUserProgress)
+        public async Task<IActionResult> SetUserProgress(ApiGateway.Src.DTOs.User.UpdateUserProgressDto updateUserProgress)
         {
             await _userService.SetUserProgress(updateUserProgress);
             return Ok();
         }
 
         [HttpPatch("update-profile")]
-        public async Task<ActionResult<UserDto>> EditProfile(EditProfileDto user)
+        public async Task<ActionResult<UserDto>> EditProfile(UpdateUserProfileDto user)
         {
             var userUpdate = await _userService.EditProfile(user);
             return Ok(userUpdate);

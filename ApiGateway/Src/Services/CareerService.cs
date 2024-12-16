@@ -18,7 +18,8 @@ namespace ApiGateway.Src.Services
             var careers = await _careerServiceClient.GetCareersAsync();
             return careers.Careers_.Select(c => new CareerDto
             {
-                Name = c.Name
+                Name = c.Name,
+                idCode = c.IdCode
             }).ToList();
         }
     }

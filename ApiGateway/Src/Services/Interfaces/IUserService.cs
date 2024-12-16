@@ -1,6 +1,7 @@
 using Grpc.Core;
 using Google.Protobuf.Collections;
 using Shared.Library.Protos;
+using ApiGateway.Src.DTOs.User;
 
 namespace ApiGateway.Src.Services.Interfaces
 {
@@ -10,8 +11,8 @@ namespace ApiGateway.Src.Services.Interfaces
 
         public Task<List<UserProgressDto>> GetUserProgress();
 
-        public Task SetUserProgress(UpdateUserProgressDto updateUserProgress);
+        public Task SetUserProgress(ApiGateway.Src.DTOs.User.UpdateUserProgressDto updateUserProgress);
 
-        public Task<UserDto> EditProfile(EditProfileDto user);
+        public Task<UserDto> EditProfile(UpdateUserProfileDto user);
     }
 }
