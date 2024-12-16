@@ -81,12 +81,12 @@ dotnet restore
 dotnet build
 ```
 
-9. Para correr el proyecto entero, se debe ingresar a las carpetas ApiGateway, AuthMicroservice, CareerMicroservice y UserMicroservice y ejecutar el siguiente comando
+9. Para correr el proyecto entero, se debe abrir 4 terminales distintas, cada una debe estar en una de las siguientes carpetas:ApiGateway, AuthMicroservice, CareerMicroservice y UserMicroservice. En cada terminal, ejecutar el siguiente comando para levantar el proyecto correspondiente
 
 ```bash
 dotnet run
 ```
 
-Asegurate de tener los puertos 5235, 5275, 5375 y el puerto 5000 habilitados
+Asegurate de tener los puertos 5235, 5275, 5375 y el puerto 5000 habilitados, junto a los puertos 5672 y 15672 para rabbitmq, 5632 y 1433 para MSSQL y 5432 para PostgreSQL
 
 10. Para utilizar el proyecto, navega a la URl http://localhost:5000/swagger/ para interactuar con los endpoints de la api gateway
