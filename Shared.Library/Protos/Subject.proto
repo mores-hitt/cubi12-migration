@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+option csharp_namespace = "Shared.Library.Protos";
+
+import "Common.proto";
+
+service SubjectGrpc {
+    rpc GetAll (Empty) returns (GetAllResponse);
+    rpc GetAllRelationships (Empty) returns (GetAllRelationshipsResponse);
+    rpc GetAllPrerequisites (Empty) returns (GetAllPrerequisitesResponse);
+    rpc GetAllPostRequisites (Empty) returns (GetAllPostRequisitesResponse);
+}
+
+message GetAllResponse {
+    repeated SubjectDto subjects = 1;
+}
+
+message SubjectDto {
+    string code = 1;
+    string name = 2;
+    string department = 3;
+    int32 credits = 4;
+    int32 semester = 5;
+    int32 id = 6;
+}
+
+message GetAllRelationshipsResponse {
+    repeated SubjectRelationshipDto relationships = 1;
+}
+
+message SubjectRelationshipDto {
+    string subject_code = 1;
+    string pre_subject_code = 2;
+    int32 id = 3;
+}
+
+message GetAllPrerequisitesResponse {
+    map <string, PrerequisiteDto> prerequisites = 1;
+}
+
+message PrerequisiteDto {
+    repeated string pre_subject_code = 1;
+}
+
+message GetAllPostRequisitesResponse {
+    map <string, PostRequisiteDto> post_requisites = 1;
+}
+
+message PostRequisiteDto {
+    repeated string post_subject_code = 1;
+}

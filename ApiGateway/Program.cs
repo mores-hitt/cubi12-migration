@@ -1,44 +1,62 @@
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using ApiGateway.Src.Services.Interfaces;
+using ApiGateway.Src.Services;
+using ApiGateway.Src.Clients;
+using ApiGateway.Src.Clients.Interfaces;
+using Grpc.Net.Client;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(type => type.FullName);
+});
+builder.Services.AddSingleton(services =>
+{
+    return GrpcChannel.ForAddress("http://localhost:5275");
+});
+builder.Services.AddSingleton(services =>
+{
+    return GrpcChannel.ForAddress("http://localhost:5375");
+});
+
+
+builder.Services.AddControllers();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IAuthServiceClient>(provider =>
+{
+    var httpClient = provider.GetRequiredService<HttpClient>();
+    var baseUrl = "http://localhost:5235";
+    return new AuthServiceClient(httpClient, baseUrl);
+});
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
+builder.Services.AddScoped<ICareerService, CareerService>();
+builder.Services.AddScoped<ICareerServiceClient, CareerServiceClient>();
+builder.Services.AddScoped<ILegacyService, LegacyService>();
+builder.Services.AddScoped<ILegacyServiceClient, LegacyServiceClient>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<ISubjectServiceClient, SubjectServiceClient>();
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//await app.UseOcelot();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+app.MapControllers();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
